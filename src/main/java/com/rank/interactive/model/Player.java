@@ -68,4 +68,16 @@ public class Player {
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
     }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", passWord='" + passWord + '\'' +
+                ", emailAddress='" + emailAddress + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", lastModified=" + lastModified +
+                '}';
+    }
 }

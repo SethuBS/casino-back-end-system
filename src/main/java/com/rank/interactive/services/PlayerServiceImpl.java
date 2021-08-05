@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Sethu on 2021/08/04.
- */
+
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
@@ -28,6 +26,19 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Player getPlayerById(Long id) {
         return repository.findById(id).get();
+    }
+
+    @Override
+    public Player findPlayerByUserName(String userName) {
+        List<Player> players = getPlayers();
+        Player player1 = null;
+        for (Player player: players){
+            if(player.getUserName().equals(userName)){
+                userName = player.getUserName();
+                player1 = player;
+            }
+        }
+        return player1;
     }
 
     @Override

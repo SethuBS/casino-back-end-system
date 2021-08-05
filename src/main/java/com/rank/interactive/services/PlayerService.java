@@ -5,15 +5,15 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Created by Sethu on 2021/08/04.
- */
+
 @Component
 public interface PlayerService {
 
     List<Player> getPlayers();
 
     Player getPlayerById(Long id);
+
+    Player findPlayerByUserName(String userName);
 
     Player insert(Player player);
 

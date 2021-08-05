@@ -2,9 +2,8 @@ package com.rank.interactive.Controllers;
 
 import com.rank.interactive.model.Player;
 import com.rank.interactive.model.Transaction;
-import com.rank.interactive.services.MoneyService;
-import com.rank.interactive.services.PlayerService;
-import com.rank.interactive.services.TransactionService;
+import com.rank.interactive.model.TransactionDetails;
+import com.rank.interactive.services.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Created by Sethu on 2021/08/04.
- */
+
 @RestController
 @RequestMapping("/api/v1/casino")
 public class ClientApiController {
@@ -29,6 +26,49 @@ public class ClientApiController {
     @Autowired
     MoneyService moneyService;
 
+    @Autowired
+    TransactionDetailsService transactionDetailsService;
+
+    @Autowired
+    PassWordValidatorService passWordValidatorService;
+
+    @GetMapping("/transaction/balance/{playerId}")
+    public ResponseEntity<Double> getCurrentBalance(@PathVariable("playerId") Long playerId){
+        Player player = playerService.getPlayerById(playerId);
+        Double amount = moneyService.getBalance(player);
+        if(amount<=0){
+            return new ResponseEntity<>(amount,HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(moneyService.getBalance(player),HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/transaction/deposit/{transactionId}/{playerId}/{amount}")
+    public Double deposit(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId") Long playerId, @PathVariable("amount") Double amount){
+        Transaction transaction = transactionService.TransactionById(transactionId);
+        Player player = playerService.getPlayerById(playerId);
+        return moneyService.deposit(transaction,player,amount);
+    }
+
+    @PostMapping("/transaction/deduct/{transactionId}/{playerId}/{amount}")
+    public Double deduct(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId")  Long playerId, @PathVariable("amount") Double amount){
+        Transaction transaction = transactionService.TransactionById(transactionId);
+        Player player = playerService.getPlayerById(playerId);
+        return moneyService.deduct(transaction,player,amount);
+    }
+
+    @PostMapping("/transaction/details/{userName}/{passWord}")
+    public ResponseEntity<List<TransactionDetails>> details(@PathVariable("userName") String userName, @PathVariable("passWord") String passWord , @RequestBody Player player){
+        player = playerService.findPlayerByUserName(userName);
+        String pass = passWordValidatorService.validate(passWord);
+        player.setPassWord(pass);
+        if(userName.equals(player.getUserName()) && passWord.equals(pass)){
+            return new ResponseEntity<>(transactionDetailsService.getTransactionDetailsByPlayer(player),HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>((List<TransactionDetails>) null,HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping({"/player"})
     public ResponseEntity<List<Player>> getAllPlayers(){
         List<Player> players = playerService.getPlayers();
@@ -41,10 +81,10 @@ public class ClientApiController {
     }
 
     @PostMapping
-    public ResponseEntity<Player> savePlayer(@PathVariable Player player){
+    public ResponseEntity<Player> savePlayer(@RequestBody Player player){
         Player playerToSave = playerService.insert(player);
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("player", "/api/v1/casino/player" + playerToSave.getId().toString());
+        httpHeaders.add("player", "/api/v1/casino/player/"+playerToSave.getId().toString());
         return new ResponseEntity<>(playerToSave, httpHeaders, HttpStatus.CREATED);
     }
 
@@ -54,7 +94,7 @@ public class ClientApiController {
         return new ResponseEntity<>(playerService.getPlayerById(playerId), HttpStatus.OK);
     }
 
-    @DeleteMapping({"/{todoId}"})
+    @DeleteMapping({"/{playerId}"})
     public ResponseEntity<Player> deletePlayer(@PathVariable("playerId") Long playerId) {
         playerService.deletePlayer(playerId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -66,21 +106,21 @@ public class ClientApiController {
         return new ResponseEntity<>(transactions, HttpStatus.OK);
     }
 
-    @GetMapping("/transaction/balance/{playerId}")
-    public Double getCurrentBalance(@PathVariable("playerId") Long playerId){
-        Player player = playerService.getPlayerById(playerId);
-        return moneyService.getBalance(player);
+    @PostMapping({"/transaction"})
+    public Transaction saveTransaction(@RequestBody Transaction transaction){
+       return transactionService.insert(transaction);
     }
 
-    @PostMapping("/transaction/deposit/{playerId}/{amount}")
-    public Double deposit(@PathVariable("playerId") Long playerId, @PathVariable("amount") Double amount){
-        Player player = playerService.getPlayerById(playerId);
-        return moneyService.deposit(player,amount);
+    @PutMapping({"/transaction/{transactionId}"})
+    public ResponseEntity<Transaction> updateTransaction(@PathVariable("transactionId") Long transactionId, @RequestBody Transaction transaction){
+        transactionService.updateTransaction(transactionId,transaction);
+        return new ResponseEntity<>(transactionService.TransactionById(transactionId), HttpStatus.OK);
     }
 
-    @PostMapping("/transaction/deduct/{playerId}/{amount}")
-    public Double deduct(@PathVariable("playerId") Long playerId, @PathVariable("amount") Double amount){
-        Player player = playerService.getPlayerById(playerId);
-        return moneyService.deduct(player,amount);
+    @DeleteMapping({"/{transactionId}"})
+    public ResponseEntity<Transaction> deleteTransaction(@PathVariable("transactionId") Long transactionId) {
+        transactionService.deleteTransaction(transactionId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 }

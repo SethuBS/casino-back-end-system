@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Created by Sethu on 2021/08/04.
- */
 
 @Component
 public interface TransactionService {

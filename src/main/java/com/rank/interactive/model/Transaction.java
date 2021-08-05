@@ -9,12 +9,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.JoinColumn;
 
-/**
- * Created by Sethu on 2021/08/04.
- */
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -27,7 +25,7 @@ public class Transaction {
     private Long id;
     @Column
     private Double balance;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "player_id")
     private Player player;
 
@@ -53,5 +51,14 @@ public class Transaction {
 
     public void setPlayer(Player player) {
         this.player = player;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "id=" + id +
+                ", balance=" + balance +
+                ", player=" + player +
+                '}';
     }
 }
