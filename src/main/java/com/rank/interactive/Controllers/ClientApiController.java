@@ -2,8 +2,8 @@ package com.rank.interactive.Controllers;
 
 import com.rank.interactive.model.Player;
 import com.rank.interactive.model.Transaction;
-import com.rank.interactive.model.TransactionDetails;
 import com.rank.interactive.services.*;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 
 
 @RestController
@@ -32,41 +33,68 @@ public class ClientApiController {
     @Autowired
     PassWordValidatorService passWordValidatorService;
 
+
     @GetMapping("/transaction/balance/{playerId}")
-    public ResponseEntity<Double> getCurrentBalance(@PathVariable("playerId") Long playerId){
+    public ResponseEntity getCurrentBalance(@PathVariable("playerId") Long playerId){
         Player player = playerService.getPlayerById(playerId);
         Double amount = moneyService.getBalance(player);
+        if(player == null){
+            return  new ResponseEntity<>(player,HttpStatus.BAD_REQUEST);
+        }
         if(amount<=0){
-            return new ResponseEntity<>(amount,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(moneyService.outOfFunds(),HttpStatus.OK);
         } else {
             return new ResponseEntity<>(moneyService.getBalance(player),HttpStatus.OK);
         }
     }
 
     @PostMapping("/transaction/deposit/{transactionId}/{playerId}/{amount}")
-    public Double deposit(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId") Long playerId, @PathVariable("amount") Double amount){
+    public ResponseEntity deposit(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId") Long playerId, @PathVariable("amount") Double amount){
         Transaction transaction = transactionService.TransactionById(transactionId);
         Player player = playerService.getPlayerById(playerId);
-        return moneyService.deposit(transaction,player,amount);
+        if(player == null){
+            return  new ResponseEntity<>(player,HttpStatus.BAD_REQUEST);
+        } else if(transaction == null){
+            return  new ResponseEntity<>(transaction,HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(moneyService.deposit(transaction,player,amount), HttpStatus.OK);
+        }
+
     }
 
     @PostMapping("/transaction/deduct/{transactionId}/{playerId}/{amount}")
-    public Double deduct(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId")  Long playerId, @PathVariable("amount") Double amount){
+    public ResponseEntity deduct(@PathVariable("transactionId")Long transactionId, @PathVariable("playerId")  Long playerId, @PathVariable("amount") Double amount){
         Transaction transaction = transactionService.TransactionById(transactionId);
         Player player = playerService.getPlayerById(playerId);
-        return moneyService.deduct(transaction,player,amount);
+
+        if(player == null){
+            return  new ResponseEntity<>(player,HttpStatus.BAD_REQUEST);
+        } else if(transaction == null){
+            return  new ResponseEntity<>(transaction,HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(moneyService.deduct(transaction,player,amount), HttpStatus.OK);
+        }
     }
 
-    @PostMapping("/transaction/details/{userName}/{passWord}")
-    public ResponseEntity<List<TransactionDetails>> details(@PathVariable("userName") String userName, @PathVariable("passWord") String passWord , @RequestBody Player player){
-        player = playerService.findPlayerByUserName(userName);
-        String pass = passWordValidatorService.validate(passWord);
-        player.setPassWord(pass);
-        if(userName.equals(player.getUserName()) && passWord.equals(pass)){
-            return new ResponseEntity<>(transactionDetailsService.getTransactionDetailsByPlayer(player),HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>((List<TransactionDetails>) null,HttpStatus.BAD_REQUEST);
+    @PostMapping("/transaction/details")
+    public ResponseEntity details(@RequestBody String details){
+
+        JSONObject jsonObject = new JSONObject(details);
+
+        String validPassword = passWordValidatorService.getPassword();
+
+        Player player = playerService.findPlayerByUserName(jsonObject.getString("userName"));
+
+        if(player == null){
+            return new ResponseEntity<>(details,HttpStatus.BAD_REQUEST);
         }
+
+        if(!(jsonObject.getString("passWord").equals(validPassword)) || !jsonObject.getString("userName").equals(player.getUserName())){
+            return new ResponseEntity<>(details,HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(transactionDetailsService.getTransactionDetailsByPlayer(player),HttpStatus.OK);
+        }
+
     }
 
     @GetMapping({"/player"})

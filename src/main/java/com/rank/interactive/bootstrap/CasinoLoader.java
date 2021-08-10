@@ -45,7 +45,7 @@ public class CasinoLoader implements CommandLineRunner {
                 Transaction transaction1 = new Transaction();
                 transaction1.setId(1L);
                 transaction1.setPlayer(player1);
-                transaction1.setBalance(2000d);
+                transaction1.setBalance(5500d);
                 transactionRepository.save(transaction1);
                 System.out.println(transaction1.toString());
 

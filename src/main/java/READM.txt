@@ -1,0 +1,26 @@
+Java 8
+
+To get current balance (parameter passed is playerId)
+http://localhost:8080/api/v1/casino/transaction/balance/1
+
+To deduct (Parameter passed transactionId,playerId,amount)
+http://localhost:8080/api/v1/casino/transaction/deduct/2/1/300
+
+To deposit (Parameter passed transactionId,playerId,amount)
+http://localhost:8080/api/v1/casino/transaction/deposit/2/1/5000
+
+To  get the last ten wager/win transactions send the following  in the body of the POST request.
+
+{
+             "userName": "Sethu",
+             "passWord": "swordfish"
+}
+
+http://localhost:8080/api/v1/casino/transaction/details
+
+If you look at ClientApiController:
+
+you can perform CRUD operation for Player and Transaction. Transaction details will be generated when deposit and deduct endpoints are called.
+
+
+

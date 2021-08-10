@@ -14,4 +14,9 @@ public class PassWordValidatorImpl implements PassWordValidatorService {
             return validPassWord;
         }
     }
+
+    @Override
+    public String getPassword() {
+        return validate(validPassWord);
+    }
 }

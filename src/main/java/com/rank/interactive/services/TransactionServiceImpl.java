@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -87,8 +86,12 @@ public class TransactionServiceImpl implements TransactionService,MoneyService,T
         Transaction transaction1 = transactionRepository.findById(transaction.getId()).get();
         Player player1 = playerRepository.findById(player.getId()).get();
         if(!Objects.isNull(transaction1) && !Objects.isNull(player1)){
-            Double newDeposit = transaction1.getBalance() - amount;
-            transaction1.setBalance(newDeposit);
+            if(amount >= getBalance(player)){
+                transaction1.setBalance(0d);
+            } else {
+                Double newDeposit = transaction1.getBalance() - amount;
+                transaction1.setBalance(newDeposit);
+            }
             transactionRepository.save(transaction1);
             TransactionDetails details = new TransactionDetails();
             details.setTransaction(transaction1.getId());
@@ -137,11 +140,17 @@ public class TransactionServiceImpl implements TransactionService,MoneyService,T
     @Override
     public List<TransactionDetails> getTransactionDetailsByPlayer(Player player) {
 
+
         List<TransactionDetails> transactionDetails = new ArrayList<>();
         for(TransactionDetails transactionDetail: getTransactionDetails()){
             if(transactionDetail.getPlayer().equals(player.getId())){
                 transactionDetails.add(transactionDetail);
             }
+        }
+
+        Collections.reverse(transactionDetails);
+        if(transactionDetails.size() >= 10){
+            transactionDetails =  transactionDetails.subList(0,10);
         }
 
         return transactionDetails;

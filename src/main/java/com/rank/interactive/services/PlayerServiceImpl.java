@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -25,20 +26,31 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Player getPlayerById(Long id) {
-        return repository.findById(id).get();
+        Player player = null;
+
+        List<Player> players = getPlayers();
+
+        for(Player player1: players){
+            if(player1.getId().equals(id)){
+                player = player1;
+            }
+        }
+        return player;
     }
 
     @Override
     public Player findPlayerByUserName(String userName) {
+        Player player = null;
+
         List<Player> players = getPlayers();
-        Player player1 = null;
-        for (Player player: players){
-            if(player.getUserName().equals(userName)){
-                userName = player.getUserName();
-                player1 = player;
+
+
+        for (Player player1: players){
+            if(player1.getUserName().equals(userName)){
+                player = player1;
             }
         }
-        return player1;
+        return player;
     }
 
     @Override
