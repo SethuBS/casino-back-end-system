@@ -4,7 +4,6 @@ package com.rank.interactive;
 import com.rank.interactive.Controllers.CasinoController;
 import com.rank.interactive.model.Transaction;
 import com.rank.interactive.services.CasinoService;
-import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,52 +25,57 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CasinoController.class)
 class CasinoBackEndSystemApplicationTests {
 
-	@Autowired
-	private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-	@MockBean
-	private CasinoService casinoService;
+    @MockBean
+    private CasinoService casinoService;
 
-	@Test
-	void testGetBalance() throws Exception {
-		Mockito.when(casinoService.getBalance(anyLong())).thenReturn(new BigDecimal("1000.00"));
+    CasinoBackEndSystemApplicationTests(MockMvc mockMvc, CasinoService casinoService) {
+        this.mockMvc = mockMvc;
+		this.casinoService = casinoService;
+    }
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/casino/balance/1"))
-				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(content().string("1000.00"));
-	}
+    @Test
+    void testGetBalance() throws Exception {
+        Mockito.when(casinoService.getBalance(anyLong())).thenReturn(new BigDecimal("1000.00"));
 
-	@Test
-	void testProcessWager() throws Exception {
-		Mockito.doNothing().when(casinoService).processWager(anyString(), anyLong(), any(BigDecimal.class), anyString());
+        mockMvc.perform(MockMvcRequestBuilders.get("/casino/balance/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string("1000.00"));
+    }
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/casino/wager")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"transactionId\": \"tx123\", \"playerId\": 1, \"amount\": 100, \"promotionCode\": \"paper\"}"))
-				.andExpect(status().isOk());
-	}
+    @Test
+    void testProcessWager() throws Exception {
+        Mockito.doNothing().when(casinoService).processWager(anyString(), anyLong(), any(BigDecimal.class), anyString());
 
-	@Test
-	void testProcessWin() throws Exception {
-		Mockito.doNothing().when(casinoService).processWin(anyString(), anyLong(), any(BigDecimal.class));
+        mockMvc.perform(MockMvcRequestBuilders.post("/casino/wager")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"transactionId\": \"tx123\", \"playerId\": 1, \"amount\": 100, \"promotionCode\": \"paper\"}"))
+                .andExpect(status().isOk());
+    }
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/casino/win")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"transactionId\": \"tx124\", \"playerId\": 1, \"amount\": 150}"))
-				.andExpect(status().isOk());
-	}
+    @Test
+    void testProcessWin() throws Exception {
+        Mockito.doNothing().when(casinoService).processWin(anyString(), anyLong(), any(BigDecimal.class));
 
-	@Test
-	void testGetLastTenTransactions() throws Exception {
-		List<Transaction> transactions = Collections.singletonList(new Transaction());
-		Mockito.when(casinoService.getLastTenTransactions(anyString(), anyString())).thenReturn(transactions);
+        mockMvc.perform(MockMvcRequestBuilders.post("/casino/win")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"transactionId\": \"tx124\", \"playerId\": 1, \"amount\": 150}"))
+                .andExpect(status().isOk());
+    }
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/casino/transactions")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content("{\"username\": \"testuser\", \"password\": \"swordfish\"}"))
-				.andExpect(status().isOk())
-				.andExpect(content().contentType(MediaType.APPLICATION_JSON));
-	}
+    @Test
+    void testGetLastTenTransactions() throws Exception {
+        List<Transaction> transactions = Collections.singletonList(new Transaction());
+        Mockito.when(casinoService.getLastTenTransactions(anyString(), anyString())).thenReturn(transactions);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/casino/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\": \"testuser\", \"password\": \"swordfish\"}"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
 
 }

@@ -1,6 +1,9 @@
 # Casino Back-End System
 
-This is a simple casino back-end system implemented using Spring Boot, designed to handle basic operations for a slot game. The system includes functionalities to get a player's balance, process wagers, record wins, and retrieve the last ten transactions. Additionally, it supports a promotional feature where the next five wagers can be free if a specific promotion code is used.
+This is a simple casino back-end system implemented using Spring Boot, designed to handle basic operations for a slot
+game. The system includes functionalities to get a player's balance, process wagers, record wins, and retrieve the last
+ten transactions. Additionally, it supports a promotional feature where the next five wagers can be free if a specific
+promotion code is used.
 
 ## Features
 
@@ -29,15 +32,19 @@ This is a simple casino back-end system implemented using Spring Boot, designed 
    ```bash
    git clone https://github.com/SethuBS/casino-back-end-system.git
    cd casino-backend
-   
+
 2. **Build the project**
+
  ```bash
    mvn clean install
 ```
+
 3. **Run the Application**
+
 ```bash
 mvn spring-boot:run
 ```
+
 4. **Access the H2 console**
 
 The H2 console is accessible at `http://localhost:8080/h2-console.`
@@ -55,10 +62,13 @@ Password: (leave empty)
 
 - ***`200 OK`*** with the player's balance
 - ***`400 Bad Request`*** if the player does not exist
+
 # Process Wager
+
 **Endpoint:** `POST /casino/wager`
 
 **Request Body:**
+
 ```json
 {
   "transactionId": "unique-transaction-id",
@@ -78,6 +88,7 @@ Password: (leave empty)
 ***Endpoint: `POST /casino/win`***
 
 **Request Body:**
+
 ```json
 {
   "transactionId": "unique-transaction-id",
@@ -95,6 +106,7 @@ Password: (leave empty)
 ***Endpoint: `POST /casino/transactions`***
 
 **Request Body:**
+
 ```json
 {
   "username": "playerUsername",
@@ -111,10 +123,13 @@ Password: (leave empty)
 # Additional Information
 
 - The system uses an H2 in-memory database, so data will be lost when the application stops.
-- The promotion feature allows the next five wagers to be free if the promotion code "paper" is used in the wager request.
-  
+- The promotion feature allows the next five wagers to be free if the promotion code "paper" is used in the wager
+  request.
+
 # Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
 # License
+
 This project is licensed under the MIT License. See the [MIT License](LICENSE) file for details.

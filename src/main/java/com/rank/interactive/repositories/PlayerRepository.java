@@ -8,6 +8,6 @@ import java.util.Optional;
 
 
 @Repository
-public interface PlayerRepository extends CrudRepository<Player,Long> {
+public interface PlayerRepository extends CrudRepository<Player, Long> {
     Optional<Player> findByUsername(String username);
 }
