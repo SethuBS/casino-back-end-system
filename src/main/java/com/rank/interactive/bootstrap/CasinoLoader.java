@@ -30,7 +30,7 @@ public class CasinoLoader implements CommandLineRunner {
                     .id(1L)
                     .username("test_player")
                     .balance(new BigDecimal("500.00"))
-                    .freeWagers(5)
+                    .freeWagers(0)
                     .build();
             playerRepository.save(player);
 

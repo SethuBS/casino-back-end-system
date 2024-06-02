@@ -39,11 +39,7 @@ public class CasinoService {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Player not found"));
 
-        if ("paper".equals(promotionCode) && player.getFreeWagers() == 0) {
-            player.setFreeWagers(5); // Activate promotion for next 5 wagers
-        }
-
-        if (player.getFreeWagers() > 0) {
+        if ("paper".equals(promotionCode) && player.getFreeWagers() > 0) {
             player.setFreeWagers(player.getFreeWagers() - 1);
             amount = BigDecimal.ZERO; // Make wager free
         } else if (player.getBalance().compareTo(amount) < 0) {
