@@ -31,10 +31,6 @@ class CasinoBackEndSystemApplicationTests {
     @MockBean
     private CasinoService casinoService;
 
-    CasinoBackEndSystemApplicationTests(MockMvc mockMvc, CasinoService casinoService) {
-        this.mockMvc = mockMvc;
-		this.casinoService = casinoService;
-    }
 
     @Test
     void testGetBalance() throws Exception {
