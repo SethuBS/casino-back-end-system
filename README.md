@@ -1,4 +1,4 @@
-# Casino Back-End System
+# Casino Back End System
 
 This is a simple casino back-end system implemented using Spring Boot, designed to handle basic operations for a slot
 game. The system includes functionalities to get a player's balance, process wagers, record wins, and retrieve the last
@@ -16,7 +16,7 @@ promotion code is used.
 ## Requirements
 
 - Java 17 or higher
-- Maven or Gradle for build automation
+- Maven 
 
 ## Dependencies
 
