@@ -15,7 +15,7 @@ promotion code is used.
 
 ## Requirements
 
-- Java 11 or higher
+- Java 17 or higher
 - Maven or Gradle for build automation
 
 ## Dependencies
