@@ -67,3 +67,54 @@ Password: (leave empty)
   "promotionCode": "paper"
 }
 ```
+
+**Response:**
+
+- ***`200 OK`*** if the wager is processed successfully
+- ***`400 Bad Request`*** if the player does not exist
+- ***`418 I'm a teapot`*** if the player has insufficient funds
+
+**Process Win**
+***Endpoint: `POST /casino/win`***
+
+**Request Body:**
+```json
+{
+  "transactionId": "unique-transaction-id",
+  "playerId": 1,
+  "amount": 150
+}
+```
+
+**Response:**
+
+- ***`200 OK`*** if the win is recorded successfully
+- ***`400 Bad Request`*** if the player does not exist
+
+**Get Last Ten Transactions**
+***Endpoint: `POST /casino/transactions`***
+
+**Request Body:**
+```json
+{
+  "username": "playerUsername",
+  "password": "swordfish"
+}
+```
+
+**Response:**
+
+- ***`200 OK`*** with the list of last ten transactions
+- ***`400 Bad Request`*** if the player does not exist
+- ***`401 Unauthorized`*** if the password is incorrect
+
+# Additional Information
+
+- The system uses an H2 in-memory database, so data will be lost when the application stops.
+- The promotion feature allows the next five wagers to be free if the promotion code "paper" is used in the wager request.
+  
+# Contributing
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
+# License
+This project is licensed under the MIT License. See the [MIT License](LICENSE) file for details.
