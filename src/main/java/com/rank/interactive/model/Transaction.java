@@ -1,16 +1,16 @@
 package com.rank.interactive.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.JoinColumn;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -20,45 +20,12 @@ import javax.persistence.JoinColumn;
 @Builder
 public class Transaction {
     @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
-    private Double balance;
-    @OneToOne
-    @JoinColumn(name = "player_id")
-    private Player player;
+    private String transactionId;
+    private Long playerId;
+    private BigDecimal amount;
+    private String type; // "wager" or "win"
+    private LocalDateTime timestamp;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Double balance) {
-        this.balance = balance;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
-
-    @Override
-    public String toString() {
-        return "Transaction{" +
-                "id=" + id +
-                ", balance=" + balance +
-                ", player=" + player +
-                '}';
-    }
 }

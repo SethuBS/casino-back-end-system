@@ -1,18 +1,16 @@
 package com.rank.interactive.model;
 
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 
 
 @Entity
@@ -22,62 +20,9 @@ import java.sql.Timestamp;
 @Builder
 public class Player {
     @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
-    private String userName;
-    @Column
-    private String passWord;
-    @Column
-    private String emailAddress;
-    @CreationTimestamp
-    @Column(updatable = false)
-    private Timestamp dateCreated;
-    @UpdateTimestamp
-    Timestamp lastModified;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getPassWord() {
-        return passWord;
-    }
-
-    public void setPassWord(String passWord) {
-        this.passWord = passWord;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    @Override
-    public String toString() {
-        return "Player{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
-                ", passWord='" + passWord + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                ", dateCreated=" + dateCreated +
-                ", lastModified=" + lastModified +
-                '}';
-    }
+    private String username;
+    private BigDecimal balance;
+    private int freeWagers; // New field to track free wagers
 }
