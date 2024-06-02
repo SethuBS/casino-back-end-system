@@ -27,7 +27,7 @@ public class CasinoLoader implements CommandLineRunner {
     private void loadData() {
         if (playerRepository.count() == 0) {
             Player player = Player.builder()
-                    .id(null)
+                    .id(1L)
                     .username("test_player")
                     .balance(new BigDecimal("500.00"))
                     .freeWagers(5)
@@ -39,13 +39,18 @@ public class CasinoLoader implements CommandLineRunner {
                 for (int i = 0; i < 11; i++) {
                     Transaction transaction = Transaction.builder()
                             .id(null)
-                            .transactionId("0010" + i)
+                            .transactionId("unique-transaction-id-"+i)
                             .playerId(player.getId())
                             .amount(new BigDecimal("50.00"))
                             .type(random.nextBoolean() ? "wager" : "win")
                             .timestamp(LocalDateTime.now())
                             .build();
                     transactionRepository.save(transaction);
+                    var newBalance = transaction.getType().equals("wager")
+                            ? player.getBalance().subtract(transaction.getAmount())
+                            : player.getBalance().add(transaction.getAmount());
+                    player.setBalance(newBalance);
+                    playerRepository.save(player);
                 }
             }
         }
