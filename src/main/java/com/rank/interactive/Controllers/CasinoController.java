@@ -2,6 +2,7 @@ package com.rank.interactive.Controllers;
 
 import com.rank.interactive.model.Transaction;
 import com.rank.interactive.services.CasinoService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/casino")
 public class CasinoController {
