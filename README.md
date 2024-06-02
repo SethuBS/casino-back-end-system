@@ -29,3 +29,41 @@ This is a simple casino back-end system implemented using Spring Boot, designed 
    ```bash
    git clone https://github.com/SethuBS/casino-back-end-system.git
    cd casino-backend
+   
+2. **Build the project**
+ ```bash
+   mvn clean install
+```
+3. **Run the Application**
+```bash
+mvn spring-boot:run
+```
+4. **Access the H2 console**
+
+The H2 console is accessible at `http://localhost:8080/h2-console.`
+
+JDBC URL: `jdbc:h2:mem:casino`
+User Name: `sa`
+Password: (leave empty)
+
+# API Endpoints
+
+**Get Player Balance**
+**Endpoint:** ***`GET /casino/balance/{playerId}`***
+
+**Response:**
+
+- ***`200 OK`*** with the player's balance
+- ***`400 Bad Request`*** if the player does not exist
+# Process Wager
+**Endpoint:** `POST /casino/wager`
+
+**Request Body:**
+```json
+{
+  "transactionId": "unique-transaction-id",
+  "playerId": 1,
+  "amount": 100,
+  "promotionCode": "paper"
+}
+```
