@@ -12,7 +12,7 @@ This is a simple casino back-end system implemented using Spring Boot, designed 
 
 ## Requirements
 
-- Java 11 or higher
+- Java 17 or higher
 - Maven or Gradle for build automation
 
 ## Dependencies
