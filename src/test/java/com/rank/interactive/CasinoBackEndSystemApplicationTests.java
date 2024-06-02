@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AllArgsConstructor
+
 @WebMvcTest(CasinoController.class)
 class CasinoBackEndSystemApplicationTests {
 
