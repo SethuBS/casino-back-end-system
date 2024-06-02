@@ -16,7 +16,7 @@ promotion code is used.
 ## Requirements
 
 - Java 17 or higher
-- Maven 
+- Maven
 
 ## Dependencies
 

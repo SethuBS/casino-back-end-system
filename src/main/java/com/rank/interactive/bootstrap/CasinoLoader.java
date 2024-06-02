@@ -39,7 +39,7 @@ public class CasinoLoader implements CommandLineRunner {
                 for (int i = 0; i < 11; i++) {
                     Transaction transaction = Transaction.builder()
                             .id(null)
-                            .transactionId("unique-transaction-id-"+i)
+                            .transactionId("unique-transaction-id-" + i)
                             .playerId(player.getId())
                             .amount(new BigDecimal("50.00"))
                             .type(random.nextBoolean() ? "wager" : "win")
