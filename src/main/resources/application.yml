@@ -29,7 +29,6 @@ casino:
     limit: ${CASINO_TRANSACTION_HISTORY_LIMIT:10}
   demo-data:
     enabled: ${CASINO_DEMO_DATA_ENABLED:true}
-    player-id: ${CASINO_DEMO_PLAYER_ID:1}
     username: ${CASINO_DEMO_USERNAME:test_player}
     starting-balance: ${CASINO_DEMO_STARTING_BALANCE:500.00}
     initial-free-wagers: ${CASINO_DEMO_INITIAL_FREE_WAGERS:0}

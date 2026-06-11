@@ -16,12 +16,12 @@ code.
 ## Requirements
 
 - Java 17 or higher
-- Maven
+- Maven wrapper included; no local Maven install is required
 
 ## Dependencies
 
 - Spring Boot
-- Spring Web
+- Spring WebMVC
 - Spring Data JPA
 - H2 Database
 
@@ -37,7 +37,7 @@ code.
 2. **Build the project**
 
 ```bash
-mvn clean install
+.\mvnw.cmd clean install
 ```
 
 3. **Run the Application**
@@ -45,7 +45,7 @@ mvn clean install
 ```powershell
 $env:CASINO_TRANSACTION_HISTORY_PASSWORD="<your-password>"
 $env:CASINO_PROMOTION_FREE_WAGER_CODE="<your-promotion-code>"
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 4. **Access the H2 console**
@@ -157,7 +157,7 @@ curl.exe -s -X POST "$baseUrl/transactions" -H "Content-Type: application/json" 
 
 - ***`200 OK`*** if the wager is processed successfully
 - ***`400 Bad Request`*** if the player does not exist
-- ***`418 I'm a teapot`*** if the player has insufficient funds
+- ***`409 Conflict`*** if the player has insufficient funds
 
 **Process Win**
 ***Endpoint: `POST /casino/win`***
