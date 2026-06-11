@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    groups:
+      spring:
+        patterns:
+          - "org.springframework.boot:*"
+      test-libraries:
+        patterns:
+          - "org.junit.jupiter:*"
+          - "org.mockito:*"
+    ignore:
+      - dependency-name: "org.springframework.boot:*"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:30"
+    open-pull-requests-limit: 5
