@@ -9,9 +9,13 @@ spring:
     password: ${CASINO_DATASOURCE_PASSWORD:}
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
   h2:
     console:
-      enabled: ${H2_CONSOLE_ENABLED:true}
+      enabled: false
       path: ${H2_CONSOLE_PATH:/h2-console}
 
 casino:
@@ -24,14 +28,7 @@ casino:
   auth:
     transaction-history-password: ${CASINO_TRANSACTION_HISTORY_PASSWORD:}
   promotion:
-    free-wager-code: ${CASINO_PROMOTION_FREE_WAGER_CODE:}
+    free-wager-code: ${CASINO_PROMOTION_FREE_WAGER_CODE:paper}
+    free-wagers-awarded: ${CASINO_PROMOTION_FREE_WAGERS_AWARDED:5}
   transaction-history:
     limit: ${CASINO_TRANSACTION_HISTORY_LIMIT:10}
-  demo-data:
-    enabled: ${CASINO_DEMO_DATA_ENABLED:true}
-    username: ${CASINO_DEMO_USERNAME:test_player}
-    starting-balance: ${CASINO_DEMO_STARTING_BALANCE:500.00}
-    initial-free-wagers: ${CASINO_DEMO_INITIAL_FREE_WAGERS:0}
-    transaction-count: ${CASINO_DEMO_TRANSACTION_COUNT:11}
-    transaction-amount: ${CASINO_DEMO_TRANSACTION_AMOUNT:50.00}
-    transaction-id-prefix: ${CASINO_DEMO_TRANSACTION_ID_PREFIX:unique-transaction-id-}

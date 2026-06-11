@@ -2,7 +2,7 @@ package com.rank.interactive.model;
 
 public enum PromotionCode
 {
-    FREE_WAGER;
+    PAPER;
 
     public boolean matches(String promotionCode, String configuredCode)
     {

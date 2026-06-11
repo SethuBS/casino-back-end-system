@@ -11,7 +11,7 @@ code.
 - Process wagers (deduct money from balance)
 - Record wins (add money to balance)
 - Retrieve recent transactions for a player
-- Promotional feature: wagers can be free when a player has free wagers and uses the configured promotion code
+- Promotional feature: the configured promotion code grants free-wager credits; stored credits make wagers free
 
 ## Requirements
 
@@ -23,6 +23,7 @@ code.
 - Spring Boot
 - Spring WebMVC
 - Spring Data JPA
+- Flyway
 - H2 Database
 
 ## Setup
@@ -44,13 +45,21 @@ code.
 
 ```powershell
 $env:CASINO_TRANSACTION_HISTORY_PASSWORD="<your-password>"
-$env:CASINO_PROMOTION_FREE_WAGER_CODE="<your-promotion-code>"
+$env:CASINO_PROMOTION_FREE_WAGER_CODE="paper"
 .\mvnw.cmd spring-boot:run
 ```
 
 4. **Access the H2 console**
 
-The H2 console path, server port, and datasource URL are configurable in `application.yml`.
+The H2 console is disabled by default. Start the application with the `dev` profile to enable it and load demo data:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="dev"
+$env:CASINO_TRANSACTION_HISTORY_PASSWORD="<your-password>"
+.\mvnw.cmd spring-boot:run
+```
+
+The H2 console path, server port, and datasource URL are configurable through YAML/env properties.
 
 Datasource URL: configured by `CASINO_DATASOURCE_URL`
 User Name: configured by `CASINO_DATASOURCE_USERNAME`
@@ -62,16 +71,27 @@ Runtime settings are managed through `src/main/resources/application.yml` and ca
 variables:
 
 - `CASINO_TRANSACTION_HISTORY_PASSWORD`: password required by the transaction-history endpoint
-- `CASINO_PROMOTION_FREE_WAGER_CODE`: promotion code accepted for free wagers
+- `CASINO_PROMOTION_FREE_WAGER_CODE`: promotion code that grants free-wager credits; defaults to `paper`
+- `CASINO_PROMOTION_FREE_WAGERS_AWARDED`: number of credits granted by the promotion code; defaults to `5`
 - `CASINO_TRANSACTION_HISTORY_LIMIT`: maximum transactions returned by the history endpoint
 - `CASINO_API_BASE_PATH`: base API path
 - `CASINO_DATASOURCE_URL`, `CASINO_DATASOURCE_USERNAME`, `CASINO_DATASOURCE_PASSWORD`: datasource settings
-- `CASINO_DEMO_DATA_ENABLED` and `CASINO_DEMO_*`: local demo seed data settings
+
+Database schema is managed by Flyway migrations under `src/main/resources/db/migration`. Demo data lives in
+`src/main/resources/db/dev` and is loaded only when the `dev` profile is active.
+
+## Build Hygiene
+
+The Maven `verify` lifecycle runs tests, Maven Enforcer checks, Flyway-backed schema validation, and Spotless
+whitespace checks.
 
 ## Curl Smoke Tests
 
 Run the application first, then execute the full block from a separate PowerShell terminal. It prompts for values that
 are not already available as environment variables.
+
+Use the `dev` profile when testing with the default `playerId` value of `1`; otherwise the database is intentionally
+empty and `GET /casino/balance/1` returns `Player not found: 1`.
 
 ```powershell
 function Require-Value($name, $prompt)
@@ -120,6 +140,40 @@ $transactionsBody = @{
 curl.exe -s -X POST "$baseUrl/transactions" -H "Content-Type: application/json" -d $transactionsBody
 ```
 
+## Postman Collection
+
+The project includes a runnable Postman collection at
+`postman/casino-back-end-system.postman_collection.json`.
+
+To use it with the default collection variables, stop any currently running app instance and start the application with
+the dev profile:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE="dev"
+$env:CASINO_TRANSACTION_HISTORY_PASSWORD="postman-password"
+$env:CASINO_PROMOTION_FREE_WAGER_CODE="paper"
+.\mvnw.cmd spring-boot:run
+```
+
+Confirm the seeded player exists before running the collection:
+
+```powershell
+curl.exe -s http://localhost:8080/casino/balance/1
+```
+
+If this returns `Player not found: 1`, the app is not running with the `dev` profile or an older app process is still
+serving the request.
+
+Then import the collection into Postman and run the `Smoke Tests` folder. The collection defaults to:
+
+- `baseUrl`: `http://localhost:8080/casino`
+- `playerId`: `1`
+- `username`: `test_player`
+- `transactionHistoryPassword`: `postman-password`
+- `promotionCode`: `paper`
+
+The `Error Cases` folder contains negative requests for validation and authentication responses.
+
 # API Endpoints
 
 **Get Player Balance**
@@ -149,7 +203,7 @@ curl.exe -s -X POST "$baseUrl/transactions" -H "Content-Type: application/json" 
   "transactionId": "unique-transaction-id",
   "playerId": 1,
   "amount": 100,
-  "promotionCode": "<configured-promotion-code>"
+  "promotionCode": "paper"
 }
 ```
 
@@ -158,6 +212,9 @@ curl.exe -s -X POST "$baseUrl/transactions" -H "Content-Type: application/json" 
 - ***`200 OK`*** if the wager is processed successfully
 - ***`400 Bad Request`*** if the player does not exist
 - ***`409 Conflict`*** if the player has insufficient funds
+
+Submitting the configured promotion code grants five free-wager credits by default. The redeeming wager consumes one
+credit immediately, and subsequent wagers consume stored credits without requiring the promotion code again.
 
 **Process Win**
 ***Endpoint: `POST /casino/win`***
@@ -210,8 +267,9 @@ curl.exe -s -X POST "$baseUrl/transactions" -H "Content-Type: application/json" 
 
 # Additional Information
 
-- The system uses an H2 in-memory database, so data will be lost when the application stops.
-- Promotion behavior and demo seed data are configurable through environment-backed YAML properties.
+- The system uses an H2 in-memory database by default, so data will be lost when the application stops.
+- Schema changes are managed by Flyway; local demo data is profile-specific.
+- Promotion and transaction-history behavior are configurable through environment-backed YAML properties.
 
 # Contributing
 

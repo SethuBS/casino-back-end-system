@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -61,6 +62,14 @@ class CasinoBackEndSystemApplicationTests
     }
 
     @Test
+    void testGetBalanceRejectsInvalidPlayerId() throws Exception
+    {
+        mockMvc.perform(MockMvcRequestBuilders.get("/casino/balance/0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("must be greater than 0")));
+    }
+
+    @Test
     void testProcessWager() throws Exception
     {
         Mockito.doNothing().when(casinoService).processWager(anyString(), anyLong(), any(BigDecimal.class), anyString());
@@ -79,6 +88,16 @@ class CasinoBackEndSystemApplicationTests
                         .content("{\"transactionId\": \"tx123\", \"playerId\": 1}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("amount must not be null"));
+    }
+
+    @Test
+    void testProcessWagerRejectsAmountWithTooManyFractionDigits() throws Exception
+    {
+        mockMvc.perform(MockMvcRequestBuilders.post("/casino/wager")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"transactionId\": \"tx123\", \"playerId\": 1, \"amount\": 100.123}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(containsString("amount numeric value out of bounds")));
     }
 
     @Test

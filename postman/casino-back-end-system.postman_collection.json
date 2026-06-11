@@ -1,0 +1,337 @@
+{
+  "info": {
+    "_postman_id": "f82494f9-4f0c-4de2-9858-0d34c773e72d",
+    "name": "Casino Back End System",
+    "description": "Smoke and regression requests for the Casino Back End System API. Start the application with the dev profile and matching collection variables before running the collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Smoke Tests",
+      "item": [
+        {
+          "name": "Get Player Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/balance/{{playerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "balance",
+                "{{playerId}}"
+              ]
+            },
+            "description": "Returns the current balance for the configured player."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('response includes player balance', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.playerId).to.eql(Number(pm.collectionVariables.get('playerId')));",
+                  "    pm.expect(body).to.have.property('balance');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Redeem Paper Promotion Wager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"paper-wager-{{$timestamp}}-{{$randomInt}}\",\n  \"playerId\": {{playerId}},\n  \"amount\": {{wagerAmount}},\n  \"promotionCode\": \"{{promotionCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wager",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wager"
+              ]
+            },
+            "description": "Redeems the configured promotion code. The default code `paper` grants free-wager credits and consumes one immediately."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Process Win",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"win-{{$timestamp}}-{{$randomInt}}\",\n  \"playerId\": {{playerId}},\n  \"amount\": {{winAmount}}\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/win",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "win"
+              ]
+            },
+            "description": "Records a win for the configured player."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Recent Transactions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{transactionHistoryPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            },
+            "description": "Returns the configured number of most recent transactions for the configured player."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('response is a transaction list', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array');",
+                  "    if (body.length > 0) {",
+                  "        pm.expect(body[0]).to.have.property('transactionId');",
+                  "        pm.expect(body[0]).to.have.property('type');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Reject Invalid Player Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/balance/0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "balance",
+                "0"
+              ]
+            },
+            "description": "Validates path variable Bean Validation and returns a clean 400 error."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('response includes validation message', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Wager Missing Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transactionId\": \"invalid-wager-{{$timestamp}}-{{$randomInt}}\",\n  \"playerId\": {{playerId}},\n  \"promotionCode\": \"{{promotionCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wager",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "wager"
+              ]
+            },
+            "description": "Validates request DTO Bean Validation and returns a clean 400 error."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('message mentions amount', function () {",
+                  "    pm.expect(pm.response.json().message).to.include('amount');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject Invalid Transaction History Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            },
+            "description": "Checks the configured transaction-history authentication path."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/casino",
+      "type": "string"
+    },
+    {
+      "key": "playerId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "test_player",
+      "type": "string"
+    },
+    {
+      "key": "transactionHistoryPassword",
+      "value": "postman-password",
+      "type": "string"
+    },
+    {
+      "key": "promotionCode",
+      "value": "paper",
+      "type": "string"
+    },
+    {
+      "key": "wagerAmount",
+      "value": "5.00",
+      "type": "string"
+    },
+    {
+      "key": "winAmount",
+      "value": "10.00",
+      "type": "string"
+    }
+  ]
+}

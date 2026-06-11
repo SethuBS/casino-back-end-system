@@ -7,8 +7,10 @@ import com.rank.interactive.dto.response.BalanceResponse;
 import com.rank.interactive.dto.response.TransactionResponse;
 import com.rank.interactive.services.CasinoService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +22,14 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@Validated
 @RequestMapping("${casino.api.base-path}")
 public class CasinoController
 {
     private final CasinoService casinoService;
 
     @GetMapping("${casino.api.balance-path}")
-    public ResponseEntity<BalanceResponse> getBalance(@PathVariable Long playerId)
+    public ResponseEntity<BalanceResponse> getBalance(@PathVariable @Positive Long playerId)
     {
         return ResponseEntity.ok(new BalanceResponse(playerId, casinoService.getBalance(playerId)));
     }

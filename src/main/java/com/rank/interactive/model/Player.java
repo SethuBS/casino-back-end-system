@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,5 +38,9 @@ public class Player
     private BigDecimal balance;
 
     @Column(nullable = false)
-    private int freeWagers; // New field to track free wagers
+    private int freeWagers;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
 }

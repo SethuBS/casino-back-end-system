@@ -2,7 +2,6 @@ package com.rank.interactive.services;
 
 import com.rank.interactive.config.CasinoProperties;
 import com.rank.interactive.exceptions.InsufficientFundsException;
-import com.rank.interactive.exceptions.InvalidPasswordException;
 import com.rank.interactive.exceptions.PlayerNotFoundException;
 import com.rank.interactive.model.Player;
 import com.rank.interactive.model.PromotionCode;
@@ -29,6 +28,8 @@ public class CasinoService
 
     private final CasinoProperties casinoProperties;
 
+    private final TransactionHistoryAuthenticator transactionHistoryAuthenticator;
+
     @Transactional(readOnly = true)
     public BigDecimal getBalance(Long playerId)
     {
@@ -45,24 +46,33 @@ public class CasinoService
 
         Player player = findPlayer(playerId);
 
-        if (PromotionCode.FREE_WAGER.matches(
-                promotionCode,
-                casinoProperties.getPromotion().getFreeWagerCode()) && player.getFreeWagers() > 0)
+        if (PromotionCode.PAPER.matches(promotionCode, casinoProperties.getPromotion().getFreeWagerCode()))
+        {
+            player.setFreeWagers(player.getFreeWagers() + casinoProperties.getPromotion().getFreeWagersAwarded());
+        }
+
+        BigDecimal transactionAmount = amount;
+
+        if (player.getFreeWagers() > 0)
         {
             player.setFreeWagers(player.getFreeWagers() - 1);
-            amount = BigDecimal.ZERO; // Make wager free
+            transactionAmount = BigDecimal.ZERO;
         }
-        else if (player.getBalance().compareTo(amount) < 0)
+        else if (player.getBalance().compareTo(transactionAmount) < 0)
         {
             throw new InsufficientFundsException(playerId);
         }
         else
         {
-            player.setBalance(player.getBalance().subtract(amount));
+            player.setBalance(player.getBalance().subtract(transactionAmount));
         }
 
         playerRepository.save(player);
-        transactionRepository.save(createTransaction(transactionId, playerId, amount.negate(), TransactionType.WAGER));
+        transactionRepository.save(createTransaction(
+                transactionId,
+                playerId,
+                transactionAmount.negate(),
+                TransactionType.WAGER));
     }
 
     @Transactional
@@ -83,10 +93,7 @@ public class CasinoService
     @Transactional(readOnly = true)
     public List<Transaction> getRecentTransactions(String username, String password)
     {
-        if (!casinoProperties.getAuth().getTransactionHistoryPassword().equals(password))
-        {
-            throw new InvalidPasswordException();
-        }
+        transactionHistoryAuthenticator.authenticate(password);
 
         Player player = playerRepository.findByUsername(username)
                 .orElseThrow(() -> new PlayerNotFoundException(username));

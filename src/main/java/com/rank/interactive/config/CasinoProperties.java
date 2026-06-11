@@ -23,7 +23,4 @@ public class CasinoProperties
 
     @Valid
     private CasinoTransactionHistoryProperties transactionHistory = new CasinoTransactionHistoryProperties();
-
-    @Valid
-    private CasinoDemoDataProperties demoData = new CasinoDemoDataProperties();
 }
