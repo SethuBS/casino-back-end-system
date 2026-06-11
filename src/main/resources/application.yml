@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    url: ${CASINO_DATASOURCE_URL:jdbc:h2:mem:casino}
+    driver-class-name: ${CASINO_DATASOURCE_DRIVER:org.h2.Driver}
+    username: ${CASINO_DATASOURCE_USERNAME:sa}
+    password: ${CASINO_DATASOURCE_PASSWORD:}
+  jpa:
+    open-in-view: false
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED:true}
+      path: ${H2_CONSOLE_PATH:/h2-console}
+
+casino:
+  api:
+    base-path: ${CASINO_API_BASE_PATH:/casino}
+    balance-path: '${CASINO_API_BALANCE_PATH:/balance/{playerId}}'
+    wager-path: ${CASINO_API_WAGER_PATH:/wager}
+    win-path: ${CASINO_API_WIN_PATH:/win}
+    transactions-path: ${CASINO_API_TRANSACTIONS_PATH:/transactions}
+  auth:
+    transaction-history-password: ${CASINO_TRANSACTION_HISTORY_PASSWORD:}
+  promotion:
+    free-wager-code: ${CASINO_PROMOTION_FREE_WAGER_CODE:}
+  transaction-history:
+    limit: ${CASINO_TRANSACTION_HISTORY_LIMIT:10}
+  demo-data:
+    enabled: ${CASINO_DEMO_DATA_ENABLED:true}
+    player-id: ${CASINO_DEMO_PLAYER_ID:1}
+    username: ${CASINO_DEMO_USERNAME:test_player}
+    starting-balance: ${CASINO_DEMO_STARTING_BALANCE:500.00}
+    initial-free-wagers: ${CASINO_DEMO_INITIAL_FREE_WAGERS:0}
+    transaction-count: ${CASINO_DEMO_TRANSACTION_COUNT:11}
+    transaction-amount: ${CASINO_DEMO_TRANSACTION_AMOUNT:50.00}
+    transaction-id-prefix: ${CASINO_DEMO_TRANSACTION_ID_PREFIX:unique-transaction-id-}

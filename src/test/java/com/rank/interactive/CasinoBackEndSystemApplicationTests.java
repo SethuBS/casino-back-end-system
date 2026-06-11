@@ -1,8 +1,9 @@
 package com.rank.interactive;
 
-
-import com.rank.interactive.Controllers.CasinoController;
+import com.rank.interactive.controller.CasinoController;
+import com.rank.interactive.exceptions.PlayerNotFoundException;
 import com.rank.interactive.model.Transaction;
+import com.rank.interactive.model.TransactionType;
 import com.rank.interactive.services.CasinoService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,46 +15,75 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@WebMvcTest(CasinoController.class)
-class CasinoBackEndSystemApplicationTests {
-
+@WebMvcTest(
+        controllers = CasinoController.class,
+        properties =
+        {
+                "casino.auth.transaction-history-password=test-password",
+                "casino.promotion.free-wager-code=test-promotion"
+        })
+class CasinoBackEndSystemApplicationTests
+{
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private CasinoService casinoService;
 
-
     @Test
-    void testGetBalance() throws Exception {
+    void testGetBalance() throws Exception
+    {
         Mockito.when(casinoService.getBalance(anyLong())).thenReturn(new BigDecimal("1000.00"));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/casino/balance/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string("1000.00"));
+                .andExpect(jsonPath("$.playerId").value(1))
+                .andExpect(jsonPath("$.balance").value(1000.00));
     }
 
     @Test
-    void testProcessWager() throws Exception {
+    void testGetBalanceReturnsBadRequestWhenPlayerDoesNotExist() throws Exception
+    {
+        Mockito.when(casinoService.getBalance(99L)).thenThrow(new PlayerNotFoundException(99L));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/casino/balance/99"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Player not found: 99"));
+    }
+
+    @Test
+    void testProcessWager() throws Exception
+    {
         Mockito.doNothing().when(casinoService).processWager(anyString(), anyLong(), any(BigDecimal.class), anyString());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/casino/wager")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"transactionId\": \"tx123\", \"playerId\": 1, \"amount\": 100, \"promotionCode\": \"paper\"}"))
+                        .content("{\"transactionId\": \"tx123\", \"playerId\": 1, \"amount\": 100, \"promotionCode\": \"test-promotion\"}"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void testProcessWin() throws Exception {
+    void testProcessWagerRejectsInvalidRequest() throws Exception
+    {
+        mockMvc.perform(MockMvcRequestBuilders.post("/casino/wager")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"transactionId\": \"tx123\", \"playerId\": 1}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("amount must not be null"));
+    }
+
+    @Test
+    void testProcessWin() throws Exception
+    {
         Mockito.doNothing().when(casinoService).processWin(anyString(), anyLong(), any(BigDecimal.class));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/casino/win")
@@ -63,15 +93,24 @@ class CasinoBackEndSystemApplicationTests {
     }
 
     @Test
-    void testGetLastTenTransactions() throws Exception {
-        List<Transaction> transactions = Collections.singletonList(new Transaction());
-        Mockito.when(casinoService.getLastTenTransactions(anyString(), anyString())).thenReturn(transactions);
+    void testGetLastTenTransactions() throws Exception
+    {
+        List<Transaction> transactions = List.of(Transaction.builder()
+                .transactionId("tx125")
+                .playerId(1L)
+                .amount(new BigDecimal("50.00"))
+                .type(TransactionType.WIN)
+                .timestamp(LocalDateTime.parse("2026-06-11T08:30:00"))
+                .build());
+        Mockito.when(casinoService.getRecentTransactions(anyString(), anyString())).thenReturn(transactions);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/casino/transactions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"testuser\", \"password\": \"swordfish\"}"))
+                        .content("{\"username\": \"testuser\", \"password\": \"test-password\"}"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].transactionId").value("tx125"))
+                .andExpect(jsonPath("$[0].type").value("win"));
     }
 
 }
