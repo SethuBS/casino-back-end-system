@@ -8,9 +8,16 @@ updates:
       time: "06:00"
     open-pull-requests-limit: 5
     groups:
+      build-plugins:
+        patterns:
+          - "org.apache.maven.plugins:*"
+          - "com.diffplug.spotless:*"
       spring:
         patterns:
           - "org.springframework.boot:*"
+      database-migrations:
+        patterns:
+          - "org.flywaydb:*"
       test-libraries:
         patterns:
           - "org.junit.jupiter:*"
