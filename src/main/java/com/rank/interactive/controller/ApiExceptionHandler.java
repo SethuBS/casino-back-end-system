@@ -1,0 +1,51 @@
+package com.rank.interactive.controller;
+
+import com.rank.interactive.dto.response.ApiErrorResponse;
+import com.rank.interactive.exceptions.InsufficientFundsException;
+import com.rank.interactive.exceptions.InvalidPasswordException;
+import com.rank.interactive.exceptions.PlayerNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class ApiExceptionHandler
+{
+    @ExceptionHandler(PlayerNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handlePlayerNotFound(PlayerNotFoundException exception)
+    {
+        return error(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidPassword(InvalidPasswordException exception)
+    {
+        return error(HttpStatus.UNAUTHORIZED, exception.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<ApiErrorResponse> handleInsufficientFunds(InsufficientFundsException exception)
+    {
+        return error(HttpStatus.I_AM_A_TEAPOT, exception.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException exception)
+    {
+        String message = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(error -> error.getField() + " " + error.getDefaultMessage())
+                .orElse("Request validation failed");
+
+        return error(HttpStatus.BAD_REQUEST, message);
+    }
+
+    private ResponseEntity<ApiErrorResponse> error(HttpStatus status, String message)
+    {
+        return ResponseEntity.status(status).body(ApiErrorResponse.of(status, message));
+    }
+}
