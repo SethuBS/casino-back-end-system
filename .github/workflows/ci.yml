@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  maven-verify:
+    name: Maven verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Run Maven verification
+        env:
+          CASINO_TRANSACTION_HISTORY_PASSWORD: ci-password
+          CASINO_PROMOTION_FREE_WAGER_CODE: ci-promotion
+        run: ./mvnw --batch-mode --no-transfer-progress verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
+          if-no-files-found: ignore
+
+  dependency-scan:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Prepare Dependency-Check cache directory
+        run: mkdir -p ~/.m2/repository/org/owasp/dependency-check-data
+
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
+
+      - name: Check NVD API key
+        id: nvd_api_key
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -z "$NVD_API_KEY" ]; then
+            echo "::warning::NVD_API_KEY repository secret is not configured; skipping OWASP Dependency-Check to avoid slow rate-limited NVD updates."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Compute Dependency-Check cache key
+        id: dependency-check-cache
+        if: steps.nvd_api_key.outputs.available == 'true'
+        run: echo "week=$(date -u +'%G-%V')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache OWASP Dependency-Check data
+        if: steps.nvd_api_key.outputs.available == 'true'
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dependency-check-data-${{ runner.os }}-${{ steps.dependency-check-cache.outputs.week }}
+          restore-keys: |
+            dependency-check-data-${{ runner.os }}-
+
+      - name: Decide Dependency-Check execution
+        id: dependency_check
+        if: steps.nvd_api_key.outputs.available == 'true'
+        run: |
+          warm_cache=false
+          if find "$HOME/.m2/repository/org/owasp/dependency-check-data" -type f \( -name "*.db" -o -name "*.mv.db" \) | grep -q .; then
+            warm_cache=true
+          fi
+
+          case "${{ github.event_name }}" in
+            schedule|workflow_dispatch)
+              echo "enabled=true" >> "$GITHUB_OUTPUT"
+              echo "reason=manual-or-scheduled" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              if [ "$warm_cache" = "true" ]; then
+                echo "enabled=true" >> "$GITHUB_OUTPUT"
+                echo "reason=warm-cache" >> "$GITHUB_OUTPUT"
+              else
+                echo "::warning::OWASP Dependency-Check cache is cold; skipping this push/pull_request scan to avoid a multi-hour first NVD bootstrap. Run the workflow manually or wait for the scheduled scan to warm the cache."
+                echo "enabled=false" >> "$GITHUB_OUTPUT"
+                echo "reason=cold-cache" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+          esac
+
+      - name: Run OWASP Dependency-Check
+        if: steps.dependency_check.outputs.enabled == 'true'
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: >
+          ./mvnw --batch-mode --no-transfer-progress
+          org.owasp:dependency-check-maven:12.2.1:check
+          -DnvdApiKeyEnvironmentVariable=NVD_API_KEY
+          -DnvdApiDelay=1000
+          -DnvdApiResultsPerPage=2000
+          -DnvdValidForHours=24
+          -DdataDirectory="$HOME/.m2/repository/org/owasp/dependency-check-data"
+          -DfailOnError=false
+          -DfailBuildOnCVSS=7
+          -Dformat=ALL
+
+      - name: Upload dependency scan reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-check-reports
+          path: target/dependency-check-report.*
+          if-no-files-found: ignore
