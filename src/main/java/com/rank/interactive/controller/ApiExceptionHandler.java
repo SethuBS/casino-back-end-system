@@ -28,7 +28,7 @@ public class ApiExceptionHandler
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ApiErrorResponse> handleInsufficientFunds(InsufficientFundsException exception)
     {
-        return error(HttpStatus.I_AM_A_TEAPOT, exception.getMessage());
+        return error(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

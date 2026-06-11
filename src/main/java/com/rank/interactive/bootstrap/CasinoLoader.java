@@ -40,7 +40,6 @@ public class CasinoLoader implements CommandLineRunner
         if (playerRepository.count() == 0)
         {
             Player player = Player.builder()
-                    .id(demoData.getPlayerId())
                     .username(demoData.getUsername())
                     .balance(demoData.getStartingBalance())
                     .freeWagers(demoData.getInitialFreeWagers())

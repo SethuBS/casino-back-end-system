@@ -15,10 +15,6 @@ public class CasinoDemoDataProperties
 {
     private boolean enabled;
 
-    @NotNull
-    @Positive
-    private Long playerId;
-
     @NotBlank
     private String username;
 
